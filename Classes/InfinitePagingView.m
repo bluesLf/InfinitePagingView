@@ -17,6 +17,8 @@
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+// Modified by YHW on 26/12/12.
+
 #import "InfinitePagingView.h"
 
 @implementation InfinitePagingView
@@ -120,6 +122,7 @@
 
 - (void)scrollToDirection:(NSInteger)moveDirection animated:(BOOL)animated
 {
+    NSAssert(_pageViews.count >=3, @"At least 3 pages.");
     CGRect adjustScrollRect;
     if (_scrollDirection == InfinitePagingViewHorizonScrollDirection) {
         if (0 != fmodf(_innerScrollView.contentOffset.x, _pageSize.width)) return ;
