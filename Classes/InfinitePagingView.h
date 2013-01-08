@@ -51,6 +51,20 @@ typedef enum {
 @interface InfinitePagingView : UIView <UIScrollViewDelegate>
 
 /*!
+ * Init with frame and imageUrls, valid the number of imageUrls.
+ * Using it for network images.
+ * @method initWithFrame:mageUrls:
+ * @param frame
+ * @param imageUrls
+ */
+- (id)initWithFrame:(CGRect)frame imageUrls:(NSMutableArray*)imageUrls;
+
+/*!
+ @var NSMutableArray contains imageUrl.
+ */
+@property (nonatomic, assign) NSMutableArray *imageUrls;
+
+/*!
  @var CGFloat width of inner page.
  */
 @property (nonatomic, assign) CGSize pageSize;
@@ -88,5 +102,9 @@ typedef enum {
  @method scrollToPrevious
  */
 - (void)scrollToNextPage;
-
+/*!
+ Layout pages.
+ @method layoutPages
+ */
+- (void)layoutPages;
 @end

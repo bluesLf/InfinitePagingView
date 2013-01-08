@@ -32,6 +32,7 @@
 @synthesize scrollDirection = _scrollDirection;
 @synthesize currentPageIndex = _currentPageIndex;
 @synthesize delegate;
+@synthesize imageUrls = _imageUrls;
 
 - (void)setFrame:(CGRect)frame
 {
@@ -52,6 +53,63 @@
         [self addSubview:_innerScrollView];
         self.pageSize = frame.size;
     }
+}
+
+- (id)initWithFrame:(CGRect)frame imageUrls:(NSMutableArray*)imageUrls {
+    if (self = [super initWithFrame:frame]) {
+        if (imageUrls.count == 0) {
+            #warning imageUrls count is zero.
+        }
+        if (imageUrls.count == 2) {
+            [imageUrls addObject:[imageUrls objectAtIndex:0]];
+            [imageUrls addObject:[imageUrls objectAtIndex:1]];
+        }
+        if (imageUrls.count >= 3) {
+            NSMutableArray *sortArray = [NSMutableArray array];
+            NSInteger centerIndex = floor(imageUrls.count / 2);
+            if (imageUrls.count % 2 == 0) {
+                for (int i=centerIndex; i < imageUrls.count; i++) {
+                    [sortArray addObject:[imageUrls objectAtIndex:i]];
+                }
+                for (int i=0; i < centerIndex; i++) {
+                    [sortArray addObject:[imageUrls objectAtIndex:i]];
+                }
+            } else {
+                for (int i=centerIndex+1; i < imageUrls.count; i++) {
+                    [sortArray addObject:[imageUrls objectAtIndex:i]];
+                }
+                for (int i=0; i <= centerIndex; i++) {
+                    [sortArray addObject:[imageUrls objectAtIndex:i]];
+                }
+            }
+            _imageUrls = sortArray;
+        } else {
+            _imageUrls = imageUrls;
+        }
+        
+    }
+    return self;
+}
+
+- (NSMutableArray*)sortImageUrls:(NSMutableArray*)imageUrls {
+    NSMutableArray *sortArray = [NSMutableArray array];
+    NSInteger centerIndex = floor(imageUrls.count / 2);
+    if (imageUrls.count % 2 == 0) {
+        for (int i=centerIndex; i < imageUrls.count; i++) {
+            [sortArray addObject:[imageUrls objectAtIndex:i]];
+        }
+        for (int i=0; i < centerIndex; i++) {
+            [sortArray addObject:[imageUrls objectAtIndex:i]];
+        }
+    } else {
+        for (int i=centerIndex+1; i < imageUrls.count; i++) {
+            [sortArray addObject:[imageUrls objectAtIndex:i]];
+        }
+        for (int i=0; i <= centerIndex; i++) {
+            [sortArray addObject:[imageUrls objectAtIndex:i]];
+        }
+    }
+    return sortArray;
 }
 
 - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event
@@ -122,7 +180,7 @@
 
 - (void)scrollToDirection:(NSInteger)moveDirection animated:(BOOL)animated
 {
-    NSAssert(_pageViews.count >=3, @"At least 3 pages.");
+//    NSAssert(_pageViews.count >=3, @"At least 3 pages.");
     CGRect adjustScrollRect;
     if (_scrollDirection == InfinitePagingViewHorizonScrollDirection) {
         if (0 != fmodf(_innerScrollView.contentOffset.x, _pageSize.width)) return ;
