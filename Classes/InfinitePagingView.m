@@ -32,7 +32,20 @@
 @synthesize scrollDirection = _scrollDirection;
 @synthesize currentPageIndex = _currentPageIndex;
 @synthesize delegate;
+@synthesize placeholderImage = _placeholderImage;
+@synthesize backgroundImageView = _backgroundImageView;
 @synthesize imageUrls = _imageUrls;
+@synthesize order = _order;
+- (id)initWithFrame:(CGRect)frame order:(Order)order {
+    return [self initWithFrame:frame order:order placeholderImage:nil];
+}
+- (id)initWithFrame:(CGRect)frame order:(Order)order placeholderImage:(UIImage*)placeholderImage {
+    if (self = [super initWithFrame:frame]) {
+        _placeholderImage = placeholderImage;
+        _order = order;
+    }
+    return self;
+}
 
 - (void)setFrame:(CGRect)frame
 {
@@ -50,76 +63,62 @@
         _innerScrollView.showsHorizontalScrollIndicator = NO;
         _innerScrollView.showsVerticalScrollIndicator = NO;
         _scrollDirection = InfinitePagingViewHorizonScrollDirection;
+        _order = Center;
         [self addSubview:_innerScrollView];
         self.pageSize = frame.size;
+        // construct background imageView
+        _backgroundImageView = [[UIImageView alloc] initWithFrame:frame];
+        if (_placeholderImage == nil) {
+            _backgroundImageView.backgroundColor = [UIColor whiteColor];
+        } else {
+            _backgroundImageView.image = _placeholderImage;
+        }
+        [self addSubview:_backgroundImageView];
+        _backgroundImageView.hidden = YES;
     }
 }
 
-- (id)initWithFrame:(CGRect)frame imageUrls:(NSMutableArray*)imageUrls {
-    if (self = [super initWithFrame:frame]) {
-        if (imageUrls.count == 0) {
-            #warning imageUrls count is zero.
-        }
-        if (imageUrls.count == 2) {
-            [imageUrls addObject:[imageUrls objectAtIndex:0]];
-            [imageUrls addObject:[imageUrls objectAtIndex:1]];
-        }
+- (void)setImageUrls:(NSMutableArray *)imageUrls {
+    if (imageUrls.count == 0) {
+        _backgroundImageView.hidden = NO;
+    }
+    if (imageUrls.count == 1) {
+        _imageUrls = imageUrls;
+    }
+    if (imageUrls.count == 2) {
+        [imageUrls addObject:[imageUrls objectAtIndex:0]];
+        [imageUrls addObject:[imageUrls objectAtIndex:1]];
+    }
+    if (_order == Center) {
+        _imageUrls = imageUrls;
+    } else {
         if (imageUrls.count >= 3) {
             NSMutableArray *sortArray = [NSMutableArray array];
-            NSInteger centerIndex = floor(imageUrls.count / 2);
-            if (imageUrls.count % 2 == 0) {
-                for (int i=centerIndex; i < imageUrls.count; i++) {
-                    [sortArray addObject:[imageUrls objectAtIndex:i]];
-                }
-                for (int i=0; i < centerIndex; i++) {
-                    [sortArray addObject:[imageUrls objectAtIndex:i]];
-                }
-            } else {
-                for (int i=centerIndex+1; i < imageUrls.count; i++) {
-                    [sortArray addObject:[imageUrls objectAtIndex:i]];
-                }
-                for (int i=0; i <= centerIndex; i++) {
-                    [sortArray addObject:[imageUrls objectAtIndex:i]];
-                }
+            NSInteger sortIndex = floor(imageUrls.count / 2);
+            if (imageUrls.count % 2 != 0) {
+                sortIndex += 1;
+            }
+            for (int i=sortIndex; i < imageUrls.count; i++) {
+                [sortArray addObject:[imageUrls objectAtIndex:i]];
+            }
+            for (int i=0; i < sortIndex; i++) {
+                [sortArray addObject:[imageUrls objectAtIndex:i]];
             }
             _imageUrls = sortArray;
         } else {
             _imageUrls = imageUrls;
         }
-        
     }
-    return self;
 }
 
-- (NSMutableArray*)sortImageUrls:(NSMutableArray*)imageUrls {
-    NSMutableArray *sortArray = [NSMutableArray array];
-    NSInteger centerIndex = floor(imageUrls.count / 2);
-    if (imageUrls.count % 2 == 0) {
-        for (int i=centerIndex; i < imageUrls.count; i++) {
-            [sortArray addObject:[imageUrls objectAtIndex:i]];
-        }
-        for (int i=0; i < centerIndex; i++) {
-            [sortArray addObject:[imageUrls objectAtIndex:i]];
-        }
-    } else {
-        for (int i=centerIndex+1; i < imageUrls.count; i++) {
-            [sortArray addObject:[imageUrls objectAtIndex:i]];
-        }
-        for (int i=0; i <= centerIndex; i++) {
-            [sortArray addObject:[imageUrls objectAtIndex:i]];
-        }
-    }
-    return sortArray;
-}
-
-- (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event
-{
-    UIView *hitView = [super hitTest:point withEvent:event];
-    if (nil != hitView) {
-        return _innerScrollView;
-    }
-    return nil;
-}
+//- (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event
+//{
+//    UIView *hitView = [super hitTest:point withEvent:event];
+//    if (nil != hitView) {
+//        return _innerScrollView;
+//    }
+//    return nil;
+//}
 
 #pragma mark - Public methods
 
@@ -128,8 +127,18 @@
     if (nil == _pageViews) {
         _pageViews = [NSMutableArray array];
     }
+    if (pageView.userInteractionEnabled = YES) {
+        UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tap:)];
+        [pageView addGestureRecognizer:tap];
+    }
     [_pageViews addObject:pageView];
     [self layoutPages];
+}
+
+- (void)tap:(id)sender {
+    if (nil != delegate && [delegate respondsToSelector:@selector(pagingView:didTapAtPageIndex:)]) {
+        [delegate pagingView:self didTapAtPageIndex:_currentPageIndex];
+    }
 }
 
 - (void)scrollToPreviousPage
@@ -143,8 +152,6 @@
     [self scrollToDirection:-1 animated:YES];
     [self performSelector:@selector(scrollViewDidEndDecelerating:) withObject:_innerScrollView afterDelay:0.5f]; // delay until scroll animation end.
 }
-
-#pragma mark - Private methods
 
 - (void)layoutPages
 {
@@ -177,6 +184,7 @@
         _innerScrollView.contentOffset = CGPointMake(0.f, _pageSize.height * _lastPageIndex);
     }
 }
+#pragma mark - Private methods
 
 - (void)scrollToDirection:(NSInteger)moveDirection animated:(BOOL)animated
 {

@@ -33,6 +33,7 @@
 - (void)pagingView:(InfinitePagingView *)pagingView didEndDragging:(UIScrollView *)scrollView;
 - (void)pagingView:(InfinitePagingView *)pagingView willBeginDecelerating:(UIScrollView *)scrollView;
 - (void)pagingView:(InfinitePagingView *)pagingView didEndDecelerating:(UIScrollView *)scrollView atPageIndex:(NSInteger)pageIndex;
+- (void)pagingView:(InfinitePagingView *)pagingView didTapAtPageIndex:(NSInteger)pageIndex;
 @end
 
 /*!
@@ -44,25 +45,36 @@ typedef enum {
     InfinitePagingViewVerticalScrollDirection,
 } InfinitePagingViewScrollDirection;
 
+typedef enum {
+    Center,// Default is Center; Using the center of imageUrls as first imageView
+    First,// Using the first of imageUrls as first imageView
+} Order;
+
 /*!
  * @class InfinitePagingView
  * endlessly scrollable view.
  */
 @interface InfinitePagingView : UIView <UIScrollViewDelegate>
 
-/*!
- * Init with frame and imageUrls, valid the number of imageUrls.
- * Using it for network images.
- * @method initWithFrame:mageUrls:
- * @param frame
- * @param imageUrls
- */
-- (id)initWithFrame:(CGRect)frame imageUrls:(NSMutableArray*)imageUrls;
+- (id)initWithFrame:(CGRect)frame order:(Order)order;
+- (id)initWithFrame:(CGRect)frame order:(Order)order placeholderImage:(UIImage*)placeholderImage;
+
+@property (nonatomic, assign) Order order;
 
 /*!
- @var NSMutableArray contains imageUrl.
+ @var Placeholder image.
  */
-@property (nonatomic, assign) NSMutableArray *imageUrls;
+@property (nonatomic, strong) UIImage *placeholderImage;
+
+/*!
+ @var Background imageView.
+ */
+@property (nonatomic, strong) UIImageView *backgroundImageView;
+
+/*!
+ @var ImageUrls.
+ */
+@property (nonatomic, strong) NSMutableArray *imageUrls;
 
 /*!
  @var CGFloat width of inner page.
