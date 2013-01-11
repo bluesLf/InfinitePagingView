@@ -17,7 +17,7 @@
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-// Modified by YHW on 26/12/12.
+// Modified by bluesLf on 26/12/12.
 
 #import <UIKit/UIKit.h>
 
@@ -33,7 +33,7 @@
 - (void)pagingView:(InfinitePagingView *)pagingView didEndDragging:(UIScrollView *)scrollView;
 - (void)pagingView:(InfinitePagingView *)pagingView willBeginDecelerating:(UIScrollView *)scrollView;
 - (void)pagingView:(InfinitePagingView *)pagingView didEndDecelerating:(UIScrollView *)scrollView atPageIndex:(NSInteger)pageIndex;
-- (void)pagingView:(InfinitePagingView *)pagingView didTapAtPageIndex:(NSInteger)pageIndex;
+- (void)pagingView:(InfinitePagingView *)pagingView didTapAtPageIndex:(NSInteger)pageIndex;// Using for viewing big imageView, loading image from network.
 @end
 
 /*!
@@ -45,10 +45,14 @@ typedef enum {
     InfinitePagingViewVerticalScrollDirection,
 } InfinitePagingViewScrollDirection;
 
+/*!
+ The direction of scroll.
+ @typedef InfinitePagingViewScrollDirection
+ */
 typedef enum {
     Center,// Default is Center; Using the center of imageUrls as first imageView
     First,// Using the first of imageUrls as first imageView
-} Order;
+} ImageViewOrder;
 
 /*!
  * @class InfinitePagingView
@@ -56,11 +60,13 @@ typedef enum {
  */
 @interface InfinitePagingView : UIView <UIScrollViewDelegate>
 
-- (id)initWithFrame:(CGRect)frame order:(Order)order;
-- (id)initWithFrame:(CGRect)frame order:(Order)order placeholderImage:(UIImage*)placeholderImage;
-
-@property (nonatomic, assign) Order order;
-
+/*!
+ Init with frame and placeholderImage.
+ @method initWithFrame:placeholderImage:
+ @param CGRect frame
+ @param UIImage *placeholderImage
+ */
+- (id)initWithFrame:(CGRect)frame placeholderImage:(UIImage*)placeholderImage;
 /*!
  @var Placeholder image.
  */

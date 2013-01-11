@@ -17,7 +17,7 @@
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-// Modified by YHW on 26/12/12.
+// Modified by bluesLf on 26/12/12.
 
 #import "InfinitePagingView.h"
 
@@ -32,17 +32,23 @@
 @synthesize scrollDirection = _scrollDirection;
 @synthesize currentPageIndex = _currentPageIndex;
 @synthesize delegate;
+// 
 @synthesize placeholderImage = _placeholderImage;
 @synthesize backgroundImageView = _backgroundImageView;
 @synthesize imageUrls = _imageUrls;
-@synthesize order = _order;
-- (id)initWithFrame:(CGRect)frame order:(Order)order {
-    return [self initWithFrame:frame order:order placeholderImage:nil];
-}
-- (id)initWithFrame:(CGRect)frame order:(Order)order placeholderImage:(UIImage*)placeholderImage {
+
+- (id)initWithFrame:(CGRect)frame placeholderImage:(UIImage*)placeholderImage {
     if (self = [super initWithFrame:frame]) {
         _placeholderImage = placeholderImage;
-        _order = order;
+        // construct background imageView
+        _backgroundImageView = [[UIImageView alloc] initWithFrame:frame];
+        if (_placeholderImage == nil) {
+            _backgroundImageView.backgroundColor = [UIColor grayColor];
+        } else {
+            _backgroundImageView.image = _placeholderImage;
+        }
+        [self addSubview:_backgroundImageView];
+        _backgroundImageView.hidden = YES;
     }
     return self;
 }
@@ -63,52 +69,39 @@
         _innerScrollView.showsHorizontalScrollIndicator = NO;
         _innerScrollView.showsVerticalScrollIndicator = NO;
         _scrollDirection = InfinitePagingViewHorizonScrollDirection;
-        _order = Center;
         [self addSubview:_innerScrollView];
         self.pageSize = frame.size;
-        // construct background imageView
-        _backgroundImageView = [[UIImageView alloc] initWithFrame:frame];
-        if (_placeholderImage == nil) {
-            _backgroundImageView.backgroundColor = [UIColor whiteColor];
-        } else {
-            _backgroundImageView.image = _placeholderImage;
-        }
-        [self addSubview:_backgroundImageView];
-        _backgroundImageView.hidden = YES;
     }
 }
 
 - (void)setImageUrls:(NSMutableArray *)imageUrls {
     if (imageUrls.count == 0) {
         _backgroundImageView.hidden = NO;
+        _imageUrls = imageUrls;
     }
     if (imageUrls.count == 1) {
         _imageUrls = imageUrls;
     }
-    if (imageUrls.count == 2) {
+    if (imageUrls.count == 2) {// The number of imageUrls can not be 2.
         [imageUrls addObject:[imageUrls objectAtIndex:0]];
         [imageUrls addObject:[imageUrls objectAtIndex:1]];
-    }
-    if (_order == Center) {
         _imageUrls = imageUrls;
-    } else {
-        if (imageUrls.count >= 3) {
-            NSMutableArray *sortArray = [NSMutableArray array];
-            NSInteger sortIndex = floor(imageUrls.count / 2);
-            if (imageUrls.count % 2 != 0) {
-                sortIndex += 1;
-            }
-            for (int i=sortIndex; i < imageUrls.count; i++) {
-                [sortArray addObject:[imageUrls objectAtIndex:i]];
-            }
-            for (int i=0; i < sortIndex; i++) {
-                [sortArray addObject:[imageUrls objectAtIndex:i]];
-            }
-            _imageUrls = sortArray;
-        } else {
-            _imageUrls = imageUrls;
-        }
     }
+    if (imageUrls.count >= 3) {
+        NSMutableArray *sortArray = [NSMutableArray array];
+        NSInteger sortIndex = floor(imageUrls.count / 2);
+        if (imageUrls.count % 2 != 0) {
+            sortIndex += 1;
+        }
+        for (int i=sortIndex; i < imageUrls.count; i++) {
+            [sortArray addObject:[imageUrls objectAtIndex:i]];
+        }
+        for (int i=0; i < sortIndex; i++) {
+            [sortArray addObject:[imageUrls objectAtIndex:i]];
+        }
+        _imageUrls = sortArray;
+    }
+
 }
 
 //- (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event
@@ -188,7 +181,6 @@
 
 - (void)scrollToDirection:(NSInteger)moveDirection animated:(BOOL)animated
 {
-//    NSAssert(_pageViews.count >=3, @"At least 3 pages.");
     CGRect adjustScrollRect;
     if (_scrollDirection == InfinitePagingViewHorizonScrollDirection) {
         if (0 != fmodf(_innerScrollView.contentOffset.x, _pageSize.width)) return ;
