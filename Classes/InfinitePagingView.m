@@ -120,7 +120,7 @@
     if (nil == _pageViews) {
         _pageViews = [NSMutableArray array];
     }
-    if (pageView.userInteractionEnabled = YES) {
+    if (pageView.userInteractionEnabled == YES) {
         UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tap:)];
         [pageView addGestureRecognizer:tap];
     }
